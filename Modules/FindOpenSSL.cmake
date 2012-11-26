@@ -37,6 +37,7 @@ if (WIN32)
     "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;Inno Setup: App Path]"
     ENV OPENSSL_ROOT_DIR
     )
+
   file(TO_CMAKE_PATH "$ENV{PROGRAMFILES}" _programfiles)
   set(_OPENSSL_ROOT_PATHS
     "${_programfiles}/OpenSSL"
@@ -45,6 +46,11 @@ if (WIN32)
     "C:/OpenSSL/"
     "C:/OpenSSL-Win32/"
     "C:/OpenSSL-Win64/"
+	"C:/OpenSSL-Win64/include"
+	"C:/OpenSSL-Win64/include/openssl"
+	"C:/OpenSSL-Win64/lib"
+	"C:/OpenSSL-Win64/lib/VC"
+	"C:/OpenSSL-Win64/lib/VC/static"
     )
   unset(_programfiles)
   set(_OPENSSL_ROOT_HINTS_AND_PATHS
@@ -84,10 +90,9 @@ if(WIN32 AND NOT CYGWIN)
     # We are using the libraries located in the VC subdir instead of the parent directory eventhough :
     # libeay32MD.lib is identical to ../libeay32.lib, and
     # ssleay32MD.lib is identical to ../ssleay32.lib
-    find_library(LIB_EAY_DEBUG
+    find_library(LIB_EAY_LIBRARY_DEBUG
       NAMES
         libeay32MDd
-        libeay32d
       ${_OPENSSL_ROOT_HINTS_AND_PATHS}
       PATH_SUFFIXES
         "lib"
@@ -95,7 +100,7 @@ if(WIN32 AND NOT CYGWIN)
         "lib/VC"
     )
 
-    find_library(LIB_EAY_RELEASE
+    find_library(LIB_EAY_LIBRARY_RELEASE
       NAMES
         libeay32MD
         libeay32
@@ -106,10 +111,9 @@ if(WIN32 AND NOT CYGWIN)
         "lib/VC"
     )
 
-    find_library(SSL_EAY_DEBUG
+    find_library(SSL_EAY_LIBRARY_DEBUG
       NAMES
         ssleay32MDd
-        ssleay32d
       ${_OPENSSL_ROOT_HINTS_AND_PATHS}
       PATH_SUFFIXES
         "lib"
@@ -117,7 +121,7 @@ if(WIN32 AND NOT CYGWIN)
         "lib/VC"
     )
 
-    find_library(SSL_EAY_RELEASE
+    find_library(SSL_EAY_LIBRARY_RELEASE
       NAMES
         ssleay32MD
         ssleay32
@@ -128,17 +132,19 @@ if(WIN32 AND NOT CYGWIN)
         "VC"
         "lib/VC"
     )
-
-    set(LIB_EAY_LIBRARY_DEBUG "${LIB_EAY_DEBUG}")
-    set(LIB_EAY_LIBRARY_RELEASE "${LIB_EAY_RELEASE}")
-    set(SSL_EAY_LIBRARY_DEBUG "${SSL_EAY_DEBUG}")
-    set(SSL_EAY_LIBRARY_RELEASE "${SSL_EAY_RELEASE}")
-
+	
     include(${CMAKE_CURRENT_LIST_DIR}/SelectLibraryConfigurations.cmake)
-    select_library_configurations(LIB_EAY)
-    select_library_configurations(SSL_EAY)
+	
+	if (CMAKE_BUILD_TYPE STREQUAL RELEASE)
+		set( OPENSSL_LIBRARIES ${SSL_EAY_LIBRARY_RELEASE} ${LIB_EAY_LIBRARY_RELEASE} )
+	else()
+		set( OPENSSL_LIBRARIES ${SSL_EAY_LIBRARY_DEBUG} ${LIB_EAY_LIBRARY_DEBUG} )
+	endif()
+    #select_library_configurations(LIB_EAY)
+    #select_library_configurations(SSL_EAY)
 
-    set( OPENSSL_LIBRARIES ${SSL_EAY_LIBRARY} ${LIB_EAY_LIBRARY} )
+    #set( OPENSSL_LIBRARIES ${SSL_EAY_LIBRARY} ${LIB_EAY_LIBRARY} )
+	message ("${OPENSSL_LIBRARIES}")
   elseif(MINGW)
     # same player, for MingW
     set(LIB_EAY_NAMES libeay32)
@@ -315,5 +321,11 @@ else ()
     OPENSSL_INCLUDE_DIR
   )
 endif ()
+
+IF (OPENSSL_FOUND)
+	SET (_OPENSSL_FOUND ON)
+ELSE ()
+	SET (_OPENSSL_FOUND OFF)	
+ENDIF()	
 
 mark_as_advanced(OPENSSL_INCLUDE_DIR OPENSSL_LIBRARIES)

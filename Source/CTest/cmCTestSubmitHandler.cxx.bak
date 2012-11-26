@@ -211,7 +211,7 @@ bool cmCTestSubmitHandler::SubmitUsingFTP(const cmStdString& localprefix,
       ::curl_easy_setopt(curl, CURLOPT_UPLOAD, 1);
 
       // if there is little to no activity for too long stop submitting
-      ::curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 0);
+      ::curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1);
       ::curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,
         SUBMIT_TIMEOUT_IN_SECONDS_DEFAULT);
 
@@ -406,7 +406,7 @@ bool cmCTestSubmitHandler::SubmitUsingHTTP(const cmStdString& localprefix,
       curl_easy_setopt(curl, CURLOPT_UPLOAD, 1);
 
       // if there is little to no activity for too long stop submitting
-      ::curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 0);
+      ::curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1);
       ::curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,
         SUBMIT_TIMEOUT_IN_SECONDS_DEFAULT);
 
